@@ -19,7 +19,6 @@ import base64
 def generate_graphs(driver2stat):
     return {driver: graphs.get_driverstat_graph(driver2stat[driver]) for driver in driver2stat.keys()}
 
-
 # Read data
 cache = './races2data.pickle'
 if os.path.isfile(cache):
@@ -80,4 +79,7 @@ def update_graph_on_driver_selection(*args):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8050)
+    import os
+    #debug = False if os.environ["DASH_DEBUG_MODE"] == "False" else True
+    debug = True
+    app.run_server(host="0.0.0.0", debug=debug, port=8050)
