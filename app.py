@@ -26,11 +26,13 @@ if os.path.isfile(cache):
     races2data = pickle.load(open(cache, "rb"))
     print("... Done")
 else:
+    print("Reading data ...")
     races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:9] for
                   race
                   in conf.races}
     with open(cache, 'wb') as f:
         pickle.dump(races2data, f)
+    print("Done ...")
 
 driver2image = {driver: base64.b64encode(open(f'./img/{driver}.png', 'rb').read()) for driver in conf.drivers}
 
@@ -81,9 +83,11 @@ def update_graph_on_driver_selection(*args):
 
 if __name__ == "__main__":
     import os
-    if 'DASH_DEBUG' in os.environ:
-        app.run_server(host="0.0.0.0", debug=True, port=8050)
-    else:
-        app.run_server(debug=False, port=8050)
+
+    app.run_server(host="0.0.0.0", debug=True, port=8050)
+    # if 'DASH_DEBUG' in os.environ:
+    #     app.run_server(host="0.0.0.0", debug=True, port=8050)
+    # else:
+    #     app.run_server(debug=False, port=8050)
     #debug = False if os.environ["DASH_DEBUG_MODE"] == "False" else True
 
