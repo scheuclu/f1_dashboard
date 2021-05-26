@@ -80,6 +80,9 @@ def update_graph_on_driver_selection(*args):
 
 if __name__ == "__main__":
     import os
+    if 'DASH_DEBUG' in os.environ:
+        app.run_server(host="0.0.0.0", debug=True, port=8050)
+    else:
+        app.run_server(debug=False, port=8050)
     #debug = False if os.environ["DASH_DEBUG_MODE"] == "False" else True
-    debug = True
-    app.run_server(host="0.0.0.0", debug=debug, port=8050)
+
