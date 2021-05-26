@@ -22,8 +22,9 @@ def generate_graphs(driver2stat):
 # Read data
 cache = './races2data.pickle'
 if os.path.isfile(cache):
+    print("Loading from cache ...")
     races2data = pickle.load(open(cache, "rb"))
-    print("Loaded from cache")
+    print("... Done")
 else:
     races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:9] for
                   race
