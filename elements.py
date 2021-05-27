@@ -9,7 +9,7 @@ import config as conf
 
 header = html.Div(
     children=[
-        html.H2(children='F1 2021 betting :)', style={"text-align": "center"}),
+        html.H2(children='F1 2021 betting :) asdasd  asd a a sd   asda sd', style={"text-align": "center"}),
         html.H3("This is work in progress"),
         html.Hr()],
     style={"text-align": "center"})

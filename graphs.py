@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-
+import config as conf
 
 def get_driverstat_graph(stat):
     trace0 = go.Scatter(x=stat.columns, y=stat.loc['race result'], name='race result',
@@ -47,5 +47,33 @@ def get_driverstat_graph(stat):
         yaxis=dict(dtick=1, title='position')
     )
 
+    fig = go.Figure(data=traces, layout=layout)
+    return fig
+
+
+def get_cumpoints_graph(cumpoints):
+    traces = []
+    import plotly.graph_objects as go
+    for driver in conf.drivers:
+        x = []
+        y = []
+        for race in conf.races:
+            x.append(race)
+            y.append(cumpoints[driver][race])
+        t = go.Scatter(x=x, y=y, name=driver, stackgroup='one')
+        traces.append(t)
+
+    layout = go.Layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        template="plotly_dark",
+        legend=dict(
+            yanchor='bottom',
+            xanchor='left',
+            x=0.05,
+            y=1.05,
+            orientation='h'
+        )
+    )
     fig = go.Figure(data=traces, layout=layout)
     return fig

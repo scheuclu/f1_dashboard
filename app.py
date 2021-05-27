@@ -15,9 +15,9 @@ import os
 import config as conf
 import base64
 
+import pages
+import scoring
 
-def generate_graphs(driver2stat):
-    return {driver: graphs.get_driverstat_graph(driver2stat[driver]) for driver in driver2stat.keys()}
 
 # Read data
 cache = './races2data.pickle'
@@ -42,20 +42,61 @@ for driver in conf.drivers:
     for race in conf.races:
         driver2stat[driver][race] = races2data[race][driver]
 
+scoring.compute_scores(driver2stat)
+
+
+# the style arguments for the sidebar. We use position:fixed and a fixed width
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 20,
+    "left": 0,
+    "bottom": 0,
+    "width": "16rem",
+    "padding": "2rem 1rem",
+    # "background-color": "#f8f9fa",
+}
+
+# the styles for the main content position it to the right of the sidebar and
+# add some padding.
+CONTENT_STYLE = {
+    "margin-left": "18rem",
+    "margin-right": "2rem",
+    "padding": "2rem 1rem",
+}
+
+sidebar = html.Div(
+    [
+        html.Img(src='https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/2560px-F1.svg.png', style={"width": "16rem"}),
+        html.H3(" ", className="display-4"),
+        html.Hr(),
+        html.P(
+            "There's a number of visualizations availiable", className="lead"
+        ),
+        dbc.Nav(
+            [
+                dbc.NavLink("Home", href="/", active="exact"),
+                dbc.NavLink("Per race points", href="/page-1", active="exact"),
+                dbc.NavLink("Overview", href="/page-2", active="exact"),
+                dbc.NavLink("Scoring", href="/page-scoring", active="exact"),
+            ],
+            vertical=True,
+            pills=True,
+        ),
+    ],
+    style=SIDEBAR_STYLE,
+)
+
+content = html.Div(
+    id="page-content",
+    children=pages.get_per_race_points(driver2stat),
+    style=CONTENT_STYLE)
+
 # App layout
 app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY])
-app.layout = dbc.Container(
-    [
-        dcc.Store(id="store", data=generate_graphs(driver2stat)),
-        elem.header,
-        html.Hr(),
-        dbc.Row(dbc.Col(elem.driver_buttons)),
-        html.H2(children='', id="button_selection"),
-        html.Hr(),
-        html.Div(id="tab-content", className="p-4"),
-    ],
-    fluid=True
-)
+app.layout = html.Div([
+    html.Div([dcc.Location(id="url"), sidebar, content])
+])
+
 
 
 @app.callback(
@@ -77,8 +118,28 @@ def update_graph_on_driver_selection(*args):
         dbc.Col(
             dcc.Graph(
                 figure=args[-1][button_id.replace('button-', '')],
-                style={'width': '190vh', 'height': '70vh'},
+                #style={'width': '190vh', 'height': '70vh'},
             )))
+
+
+@app.callback(Output("page-content", "children"), [Input("url", "pathname")])
+def render_page_content(pathname):
+    if pathname == "/":
+        return html.P("This is the content of the home page!")
+    elif pathname == "/page-1":
+        return pages.get_per_race_points(driver2stat)
+    elif pathname == "/page-2":
+        return pages.get_overview(driver2stat)
+    elif pathname == "/page-scoring":
+        return pages.get_scoring()
+    # If the user tries to reach a different page, return a 404 message
+    return dbc.Jumbotron(
+        [
+            html.H1("404: Not found", className="text-danger"),
+            html.Hr(),
+            html.P(f"The pathname {pathname} was not recognised..."),
+        ]
+    )
 
 
 if __name__ == "__main__":
