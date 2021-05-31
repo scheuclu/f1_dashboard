@@ -1,5 +1,7 @@
 import plotly.graph_objects as go
+
 import config as conf
+
 
 def get_driverstat_graph(stat):
     trace0 = go.Scatter(x=stat.columns, y=stat.loc['race result'], name='race result',
@@ -76,4 +78,118 @@ def get_cumpoints_graph(cumpoints):
         )
     )
     fig = go.Figure(data=traces, layout=layout)
+    return fig
+
+
+def get_overview(lukas_points, patrick_points, num_finished, num_remaining):
+    colors = ['#FF1801', '#b38537']
+
+    standings = go.Pie(
+        values=[patrick_points, lukas_points],
+        text=['Patrick', 'Lukas'],
+        textinfo='text+value',
+        marker=dict(colors=colors, line=dict(color='#FFFFFF', width=2))
+    )
+    layout = go.Layout(
+        title={
+            'text': "Standings",
+            'y': 0.9,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'},
+        autosize=True,
+        showlegend=False,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        template="plotly_dark"
+    )
+    fig_standings = go.Figure(data=standings, layout=layout)
+
+    trace_races = go.Pie(
+        values=[num_finished, num_remaining],
+        text=['Finished races', 'Remaining races'],
+        textinfo='text+value',
+        marker=dict(colors=colors, line=dict(color='#FFFFFF', width=2))
+    )
+    layout = go.Layout(
+        title={
+            'text': "Season progress",
+            'y': 0.9,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'},
+        autosize=True,
+        showlegend=False,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        template="plotly_dark"
+    )
+    fig_races = go.Figure(data=trace_races, layout=layout)
+    return fig_standings, fig_races
+
+
+import scoring
+
+
+def score2z(score):
+    return score if score != 0 else None
+
+
+def z2text(z):
+    return str(int(z)) if z is not None else ''
+
+
+def get_scoring():
+    positions = list(range(1, 21))
+
+    buttons = []
+    for championship_position in range(1, 21):
+
+        z = [[score2z(scoring.points(championship_position, race_result, race_guess)) for race_guess in positions] for
+             race_result in positions]
+        text = [[z2text(zz) for zz in row] for row in z]
+
+        annotations = go.Annotations()
+        for n, row in enumerate(z):
+            for m, val in enumerate(row):
+                annotations.append(go.layout.Annotation(text=text[n][m], x=m + 1, y=n + 1,
+                                                        xref='x1', yref='y1', showarrow=False, font={'color': 'black'}))
+
+        buttons.append(
+            dict(
+                label="Pos " + str(championship_position),
+                method="update",
+                args=[
+                    {"z": [z]},
+                    {"annotations": annotations}
+                ]
+            )
+        )
+
+    fig = go.Figure(go.Heatmap(z=z, x=positions, y=positions, colorscale='OrRd', xgap=2, ygap=2,
+                               showscale=False))
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        template="plotly_dark",
+        xaxis=dict(title='race guess', showgrid=False, dtick=1),
+        yaxis=dict(title='race result', showgrid=False, dtick=1),
+        annotations=annotations,
+        height=600,
+        width=600,
+        title='Scoring depends on the champion positions of the driver'
+    )
+
+    fig.update_layout(
+        updatemenus=[
+            dict(active=19, buttons=buttons,
+                 direction="down",
+                 pad={"r": 10, "t": 10},
+                 showactive=True,
+                 x=0.02,
+                 xanchor="left",
+                 y=1.0,
+                 yanchor="top",
+                 )])
+
     return fig

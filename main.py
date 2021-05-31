@@ -1,23 +1,20 @@
 """
 TODO
 """
+import base64
+import os
+import pickle
+
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
 import pandas as pd
+from dash.dependencies import Input, Output
 
-import graphs
-import elements as elem
-import pickle
-import os
 import config as conf
-import base64
-
 import pages
 import scoring
-
 
 # Read data
 cache = './races2data.pickle'
@@ -44,7 +41,6 @@ for driver in conf.drivers:
 
 scoring.compute_scores(driver2stat)
 
-
 # the style arguments for the sidebar. We use position:fixed and a fixed width
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -66,7 +62,8 @@ CONTENT_STYLE = {
 
 sidebar = html.Div(
     [
-        html.Img(src='https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/2560px-F1.svg.png', style={"width": "16rem"}),
+        html.Img(src='https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/2560px-F1.svg.png',
+                 style={"width": "16rem"}),
         html.H3(" ", className="display-4"),
         html.Hr(),
         html.P(
@@ -86,17 +83,16 @@ sidebar = html.Div(
     style=SIDEBAR_STYLE,
 )
 
-content = html.Div(
+content = dcc.Loading(html.Div(
     id="page-content",
     children=pages.get_per_race_points(driver2stat),
-    style=CONTENT_STYLE)
+    style=CONTENT_STYLE))
 
 # App layout
 app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY])
 app.layout = html.Div([
     html.Div([dcc.Location(id="url"), sidebar, content])
 ])
-
 
 
 @app.callback(
@@ -118,14 +114,14 @@ def update_graph_on_driver_selection(*args):
         dbc.Col(
             dcc.Graph(
                 figure=args[-1][button_id.replace('button-', '')],
-                #style={'width': '190vh', 'height': '70vh'},
+                # style={'width': '190vh', 'height': '70vh'},
             )))
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname == "/":
-        return html.P("This is the content of the home page!")
+        return pages.get_home(driver2stat)
     elif pathname == "/page-1":
         return pages.get_per_race_points(driver2stat)
     elif pathname == "/page-2":
@@ -145,10 +141,9 @@ def render_page_content(pathname):
 if __name__ == "__main__":
     import os
 
-    app.run_server(host="0.0.0.0", debug=True, port=8080)
+    app.run_server(host="0.0.0.0", debug=False, port=8080)
     # if 'DASH_DEBUG' in os.environ:
     #     app.run_server(host="0.0.0.0", debug=True, port=8050)
     # else:
     #     app.run_server(debug=False, port=8050)
-    #debug = False if os.environ["DASH_DEBUG_MODE"] == "False" else True
-
+    # debug = False if os.environ["DASH_DEBUG_MODE"] == "False" else True

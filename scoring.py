@@ -1,12 +1,11 @@
 import config as conf
 
+
 def base_points(championship_standing, race_result):
-
-
     if (race_result == ''):
         return ''
     if (race_result == 'DNF'):
-     return 50
+        return 50
 
     base_points = abs(race_result - championship_standing) + 10
     if (race_result == 3):
@@ -20,7 +19,6 @@ def base_points(championship_standing, race_result):
 
 
 def multiplicator(race_guess, race_result):
-
     if (race_result == 'DNF' and race_guess == 'DNF'):
         return 1.0
 
@@ -42,8 +40,7 @@ def multiplicator(race_guess, race_result):
 
 
 def points(championship_standing, race_result, race_guess):
-    return base_points(championship_standing, race_result)*multiplicator(race_guess, race_result)
-
+    return base_points(championship_standing, race_result) * multiplicator(race_guess, race_result)
 
 
 def compute_scores(driver2stat):
