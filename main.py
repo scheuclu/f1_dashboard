@@ -96,10 +96,10 @@ app.layout = html.Div([
                   children=[
                       html.Hr(),
                       dcc.Markdown("""
-                      ###### Code at: [github.com/scheuclu/f1_dashboard](https://www.github.com/scheuclu/f1_dashboard),
+                      ###### Code at: [github.com/scheuclu/f1_dashboard](https://www.github.com/scheuclu/f1_dashboard)
                       ###### created by: [scheuclu@gmail.com](mailto:scheuclu@gmail.com)
                       """)
-                  ], style={'position': 'fixed', 'width': '100%', 'textAlign': 'center', 'link': {'color': 'blue'}}
+                  ], style={'position': 'fixed', 'width': '100%', 'textAlign': 'center'}
               )])
 ])
 
