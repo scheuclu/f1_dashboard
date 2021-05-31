@@ -62,7 +62,7 @@ CONTENT_STYLE = {
 
 sidebar = html.Div(
     [
-        html.Img(src='https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/2560px-F1.svg.png',
+        html.Img(src='https://i.ibb.co/ZG3Fh9K/F1.png',
                  style={"width": "16rem"}),
         html.H3(" ", className="display-4"),
         html.Hr(),
