@@ -6,7 +6,6 @@ import pandas as pd
 import config as conf
 import elements as elem
 import graphs
-import dash_daq as daq
 
 
 def generate_graphs(driver2stat):
