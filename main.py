@@ -150,7 +150,7 @@ def render_page_content(pathname):
 if __name__ == "__main__":
     import os
 
-    app.run_server(host="0.0.0.0", debug=True, port=8080)
+    app.run_server(host="0.0.0.0", debug=False, port=8080)
     # if 'DASH_DEBUG' in os.environ:
     #     app.run_server(host="0.0.0.0", debug=True, port=8050)
     # else:

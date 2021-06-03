@@ -177,7 +177,7 @@ def get_scoring():
         annotations=annotations,
         height=600,
         width=600,
-        title='Scoring depends on the champion positions of the driver'
+        title='Select championship position:'
     )
 
     fig.update_layout(

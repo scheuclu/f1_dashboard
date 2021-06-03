@@ -68,4 +68,10 @@ def get_home(driver2stat):
 
 
 def get_scoring():
-    return [dcc.Graph(figure=graphs.get_scoring())]
+    return [
+        html.P("The scoring system rewards 'unlikely' bets, if they work out."),
+        html.P("For example, correctly guessing the driver on championship position 10 to win the race gives more points than guessing that the leader will win."),
+        html.P("Points are given if the race result of a driver is guesses within 3 places. Being spot on or just one-off gives extra points."),
+        html.P("Theres also a point bonus for the podium positions"),
+
+        dcc.Graph(figure=graphs.get_scoring())]
