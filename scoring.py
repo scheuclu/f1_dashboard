@@ -49,10 +49,17 @@ def compute_scores(driver2stat):
         for race in conf.races:
             standing = driver2stat[driver][race]['champoinship standing']
             result = driver2stat[driver][race]['race result']
+
             patrick_tip = driver2stat[driver][race]['Patrick tip']
             lukas_tip = driver2stat[driver][race]['Lukas tip']
+            lisa_tip = driver2stat[driver][race]['Lisa tip']
+
             driver2stat[driver][race]['base_points'] = base_points(standing, result)
-            driver2stat[driver][race]['Patrick points'] = points(standing, result, patrick_tip)
+
             driver2stat[driver][race]['Lukas multiplicator'] = multiplicator(lukas_tip, result)
             driver2stat[driver][race]['Patrick multiplicator'] = multiplicator(patrick_tip, result)
+            driver2stat[driver][race]['Lisa multiplicator'] = multiplicator(lisa_tip, result)
+
+            driver2stat[driver][race]['Patrick points'] = points(standing, result, patrick_tip)
             driver2stat[driver][race]['Lukas points'] = points(standing, result, lukas_tip)
+            driver2stat[driver][race]['Lisa points'] = points(standing, result, lisa_tip)

@@ -66,3 +66,15 @@ driver2team = {
 }
 
 path = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAZImhiKDjbe_oHMyWZBErrXoQ97z2VAOY3BPGST3ch_6XeKUmIpi-GfexCURRdGMFHGSHJTWtj5fy/pub?output=xlsx'
+
+players = {
+    'lukas': {
+        'color': '#FF1801'
+    },
+    'patrick': {
+        'color': '#b38537'
+    },
+    'lisa': {
+        'color': '#ff9501'
+    },
+}

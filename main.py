@@ -24,7 +24,7 @@ if os.path.isfile(cache):
     print("... Done")
 else:
     print("Reading data ...")
-    races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:9] for
+    races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:12] for
                   race
                   in conf.races}
     with open(cache, 'wb') as f:
@@ -150,7 +150,7 @@ def render_page_content(pathname):
 if __name__ == "__main__":
     import os
 
-    app.run_server(host="0.0.0.0", debug=False, port=8080)
+    app.run_server(host="0.0.0.0", debug=True, port=8080)
     # if 'DASH_DEBUG' in os.environ:
     #     app.run_server(host="0.0.0.0", debug=True, port=8050)
     # else:
