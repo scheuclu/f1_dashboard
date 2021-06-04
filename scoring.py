@@ -1,9 +1,10 @@
 import config as conf
+import math
 
 
 def base_points(championship_standing, race_result):
     if (race_result == ''):
-        return ''
+        return 0
     if (race_result == 'DNF'):
         return 50
 
@@ -19,6 +20,12 @@ def base_points(championship_standing, race_result):
 
 
 def multiplicator(race_guess, race_result):
+
+    if isinstance(race_guess, (int, float)) and math.isnan(race_guess):
+        return float('NaN')
+    if isinstance(race_result, (int, float)) and math.isnan(race_result):
+        return float('NaN')
+
     if (race_result == 'DNF' and race_guess == 'DNF'):
         return 1.0
 
@@ -27,6 +34,12 @@ def multiplicator(race_guess, race_result):
 
     if (race_result != 'DNF' and race_guess == 'DNF'):
         return 0.0
+
+
+    print(race_result, race_guess, type(race_result), type(race_guess))
+    # if math.isnan(race_guess):
+    #     return 0.0
+
 
     diff = abs(race_result - race_guess);
     if (diff == 0):
@@ -42,6 +55,17 @@ def multiplicator(race_guess, race_result):
 def points(championship_standing, race_result, race_guess):
     return base_points(championship_standing, race_result) * multiplicator(race_guess, race_result)
 
+#compute scores on races2data
+def compute_scores2(races2data):
+    for df in races2data.values():
+        for driver in conf.drivers:
+            bp = base_points(df[driver]['champoinship standing'], df[driver]['race result'])
+            df[driver]['base points'] = bp
+            for player in ['Lukas', 'Lisa', 'Patrick']:
+                mult=multiplicator(df[driver][f'{player} tip'], df[driver]['race result'])
+                df[driver][f'{player} multiplicator'] = mult
+                df[driver][f'{player} points'] = bp*mult
+
 
 def compute_scores(driver2stat):
     # Calculate per race points points
@@ -54,7 +78,7 @@ def compute_scores(driver2stat):
             lukas_tip = driver2stat[driver][race]['Lukas tip']
             lisa_tip = driver2stat[driver][race]['Lisa tip']
 
-            driver2stat[driver][race]['base_points'] = base_points(standing, result)
+            driver2stat[driver][race]['base points'] = base_points(standing, result)
 
             driver2stat[driver][race]['Lukas multiplicator'] = multiplicator(lukas_tip, result)
             driver2stat[driver][race]['Patrick multiplicator'] = multiplicator(patrick_tip, result)

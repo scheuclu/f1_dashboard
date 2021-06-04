@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
+import dash_table
 
 import config as conf
 import elements as elem
@@ -55,7 +56,7 @@ def get_home(driver2stat):
         html.Hr(),
         html.H4("Next Race: Azerbaijan"),
         html.Img(
-            src='https://www.formula1.com/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Baku_Circuit.png.transform/7col-retina/image.png',
+            src='https://raw.githubusercontent.com/scheuclu/f1_dashboard/main/img/tracks/Bahrain.png',
             width='50%')
         # dbc.Row([
         #     dbc.Col(dcc.Graph(figure=fig_standings)),
@@ -74,3 +75,77 @@ def get_scoring():
         html.P("Theres also a point bonus for the podium positions"),
 
         dcc.Graph(figure=graphs.get_scoring())]
+
+
+def get_data(races2data):
+    # race_selector = dbc.DropdownMenu(
+    #     id='data_race_selector',
+    #     label="Select the race",
+    #     children=[dbc.DropdownMenuItem(children=race, id=race, key=race) for race in conf.races]
+    # )
+
+    race_selector =dcc.Dropdown(
+        id='data_race_selector',
+        options=[ {'label': race, 'value': race} for race in conf.races],
+        value='Monaco',
+        style={
+            'backgroundColor': 'white', #selected bg
+             'color': 'black', #dropdown text
+             'foregroundColor': 'yellow',
+            #'background': 'transparent'
+            # 'text':{'color': 'green'},
+            # 'input': {'color': 'blue'}
+
+        }
+    )
+
+    df=races2data['Monaco']
+    df=df.reset_index()
+
+    style_header_conditional=[
+        {
+            'if': {
+                'column_id': driver,
+            },
+            'backgroundColor': conf.teamcolor[conf.driver2team[driver]],
+            'color': 'black' if conf.driver2team[driver]=='Haas' else 'white',
+            'textAlign': 'center',
+            'fontSize': 16
+        } for driver in conf.drivers
+    ]
+
+
+
+    table =  dash_table.DataTable(
+        id='table_data',
+        columns=[{"name": i, "id": i} for i in df.columns],
+        data=df.to_dict('records'),
+        #style_header={'backgroundColor': conf.players['lukas']['color']},
+        style_cell={
+            'backgroundColor': 'rgba(50, 50, 50, 0)',
+            'color': 'white',
+            'fontSize': 14
+        },
+        style_header_conditional=style_header_conditional,
+        style_data_conditional=[{
+            'if': {'row_index': 'odd'},
+            'backgroundColor': 'rgb(50, 50, 50)'
+        }] ,
+    )
+
+    return [
+        race_selector,
+        html.Hr(),
+        table,
+        html.Hr(),
+        dbc.Row([
+            dbc.Col(
+                dbc.Input(id="pw_input", placeholder="Enter access code...", type="text"),
+
+            ),
+            dbc.Col(
+                dbc.Button("Save and recompute scores", id="recompute_button",  color="primary", block=True)
+            ),
+        ])
+
+    ]

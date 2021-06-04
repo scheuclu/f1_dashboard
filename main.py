@@ -10,21 +10,40 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 import config as conf
 import pages
 import scoring
+
+from google.cloud import storage
+
+# # Always read data from bucket
+# bucket_name = "artifacts.f1-betting-313907.appspot.com"
+# storage_client = storage.Client()
+# bucket=storage_client.bucket(bucket_name)
+# blob = bucket.get_blob('races2data.pickle')
+# races2data = pickle.load(blob.open('rb'))
+
 
 # Read data
 cache = './races2data.pickle'
 if os.path.isfile(cache):
     print("Loading from cache ...")
     races2data = pickle.load(open(cache, "rb"))
+    for df in races2data.values():
+      df.loc['base points']=float('NaN')
+      df.loc['Lukas points']=float('NaN')
+      df.loc['Patrick points']=float('NaN')
+      df.loc['Lisa points']=float('NaN')
+      df.loc['Lukas multiplicator']=float('NaN')
+      df.loc['Patrick multiplicator']=float('NaN')
+      df.loc['Lisa multiplicator']=float('NaN')
+
     print("... Done")
 else:
     print("Reading data ...")
-    races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:12] for
+    races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:5] for
                   race
                   in conf.races}
     with open(cache, 'wb') as f:
@@ -39,7 +58,13 @@ for driver in conf.drivers:
     for race in conf.races:
         driver2stat[driver][race] = races2data[race][driver]
 
+
+scoring.compute_scores2(races2data)
 scoring.compute_scores(driver2stat)
+
+# with blob.open('wb') as f:
+#     pickle.dump(races2data, f)
+# print("Writen scored data to file")
 
 # the style arguments for the sidebar. We use position:fixed and a fixed width
 SIDEBAR_STYLE = {
@@ -75,6 +100,7 @@ sidebar = html.Div(
                 dbc.NavLink("Per race points", href="/page-1", active="exact"),
                 dbc.NavLink("Overview", href="/page-2", active="exact"),
                 dbc.NavLink("Scoring", href="/page-scoring", active="exact"),
+                dbc.NavLink("Data (debug)", href="/page-data", active="exact"),
             ],
             vertical=True,
             pills=True,
@@ -89,7 +115,7 @@ content = dcc.Loading(html.Div(
     style=CONTENT_STYLE))
 
 # App layout
-app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY])
+app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY], suppress_callback_exceptions=False)
 app.layout = html.Div([
     html.Div([dcc.Location(id="url"), sidebar, content,
               html.Footer(
@@ -137,6 +163,9 @@ def render_page_content(pathname):
         return pages.get_overview(driver2stat)
     elif pathname == "/page-scoring":
         return pages.get_scoring()
+    elif pathname == "/page-data":
+        return pages.get_data(races2data)
+
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -145,6 +174,17 @@ def render_page_content(pathname):
             html.P(f"The pathname {pathname} was not recognised..."),
         ]
     )
+
+
+@app.callback(Output("table_data", "data"), [Input("data_race_selector", "value")], State("data_race_selector", "value"))
+def update_race_data(race_name, state):
+    print(f"Selected {race_name}")
+    print(f'state:{state}')
+    if race_name==None:
+        return state
+    df = races2data[race_name].copy()
+    df = df.reset_index()
+    return df.to_dict('records')
 
 
 if __name__ == "__main__":
