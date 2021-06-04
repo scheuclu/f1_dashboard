@@ -46,6 +46,14 @@ else:
     races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:5] for
                   race
                   in conf.races}
+    for df in races2data.values():
+      df.loc['base points']=float('NaN')
+      df.loc['Lukas points']=float('NaN')
+      df.loc['Patrick points']=float('NaN')
+      df.loc['Lisa points']=float('NaN')
+      df.loc['Lukas multiplicator']=float('NaN')
+      df.loc['Patrick multiplicator']=float('NaN')
+      df.loc['Lisa multiplicator']=float('NaN')
     with open(cache, 'wb') as f:
         pickle.dump(races2data, f)
     print("Done ...")

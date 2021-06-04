@@ -15,11 +15,11 @@ def generate_graphs(driver2stat):
 
 def get_per_race_points(driver2stat):
     return [
-        # dcc.Store(id="store", data=generate_graphs(driver2stat)),
-        # dbc.Row(dbc.Col(elem.driver_buttons)),
-        # html.H2(children='', id="button_selection"),
-        # html.Hr(),
-        # html.Div(id="tab-content", className="p-4"),
+        dcc.Store(id="store", data=generate_graphs(driver2stat)),
+        dbc.Row(dbc.Col(elem.driver_buttons)),
+        html.H2(children='', id="button_selection"),
+        html.Hr(),
+        html.Div(id="tab-content", className="p-4"),
     ]
 
 
