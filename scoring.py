@@ -35,12 +35,6 @@ def multiplicator(race_guess, race_result):
     if (race_result != 'DNF' and race_guess == 'DNF'):
         return 0.0
 
-
-    print(race_result, race_guess, type(race_result), type(race_guess))
-    # if math.isnan(race_guess):
-    #     return 0.0
-
-
     diff = abs(race_result - race_guess);
     if (diff == 0):
         return 3.0
