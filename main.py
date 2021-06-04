@@ -18,45 +18,45 @@ import scoring
 
 from google.cloud import storage
 
-# # Always read data from bucket
-# bucket_name = "artifacts.f1-betting-313907.appspot.com"
-# storage_client = storage.Client()
-# bucket=storage_client.bucket(bucket_name)
-# blob = bucket.get_blob('races2data.pickle')
-# races2data = pickle.load(blob.open('rb'))
+# Always read data from bucket
+bucket_name = "artifacts.f1-betting-313907.appspot.com"
+storage_client = storage.Client()
+bucket=storage_client.bucket(bucket_name)
+blob = bucket.get_blob('races2data.pickle')
+races2data = pickle.load(blob.open('rb'))
 
 
-# Read data
-cache = './races2data.pickle'
-if os.path.isfile(cache):
-    print("Loading from cache ...")
-    races2data = pickle.load(open(cache, "rb"))
-    for df in races2data.values():
-      df.loc['base points']=float('NaN')
-      df.loc['Lukas points']=float('NaN')
-      df.loc['Patrick points']=float('NaN')
-      df.loc['Lisa points']=float('NaN')
-      df.loc['Lukas multiplicator']=float('NaN')
-      df.loc['Patrick multiplicator']=float('NaN')
-      df.loc['Lisa multiplicator']=float('NaN')
-
-    print("... Done")
-else:
-    print("Reading data ...")
-    races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:5] for
-                  race
-                  in conf.races}
-    for df in races2data.values():
-      df.loc['base points']=float('NaN')
-      df.loc['Lukas points']=float('NaN')
-      df.loc['Patrick points']=float('NaN')
-      df.loc['Lisa points']=float('NaN')
-      df.loc['Lukas multiplicator']=float('NaN')
-      df.loc['Patrick multiplicator']=float('NaN')
-      df.loc['Lisa multiplicator']=float('NaN')
-    with open(cache, 'wb') as f:
-        pickle.dump(races2data, f)
-    print("Done ...")
+# # Read data
+# cache = './races2data.pickle'
+# if os.path.isfile(cache):
+#     print("Loading from cache ...")
+#     races2data = pickle.load(open(cache, "rb"))
+#     for df in races2data.values():
+#       df.loc['base points']=float('NaN')
+#       df.loc['Lukas points']=float('NaN')
+#       df.loc['Patrick points']=float('NaN')
+#       df.loc['Lisa points']=float('NaN')
+#       df.loc['Lukas multiplicator']=float('NaN')
+#       df.loc['Patrick multiplicator']=float('NaN')
+#       df.loc['Lisa multiplicator']=float('NaN')
+#
+#     print("... Done")
+# else:
+#     print("Reading data ...")
+#     races2data = {race: pd.read_excel(conf.path, sheet_name=race, usecols="A:U", index_col=0, header=19).iloc[0:5] for
+#                   race
+#                   in conf.races}
+#     for df in races2data.values():
+#       df.loc['base points']=float('NaN')
+#       df.loc['Lukas points']=float('NaN')
+#       df.loc['Patrick points']=float('NaN')
+#       df.loc['Lisa points']=float('NaN')
+#       df.loc['Lukas multiplicator']=float('NaN')
+#       df.loc['Patrick multiplicator']=float('NaN')
+#       df.loc['Lisa multiplicator']=float('NaN')
+#     with open(cache, 'wb') as f:
+#         pickle.dump(races2data, f)
+#     print("Done ...")
 
 driver2image = {driver: base64.b64encode(open(f'./img/{driver}.png', 'rb').read()) for driver in conf.drivers}
 
