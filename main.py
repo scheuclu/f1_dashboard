@@ -2,8 +2,7 @@
 TODO
 """
 import base64
-import os
-import pickle
+import hashlib
 
 import dash
 import dash_bootstrap_components as dbc
@@ -15,16 +14,9 @@ from dash.dependencies import Input, Output, State
 import config as conf
 import pages
 import scoring
+import storage
 
-from google.cloud import storage
-
-# Always read data from bucket
-bucket_name = "artifacts.f1-betting-313907.appspot.com"
-storage_client = storage.Client()
-bucket=storage_client.bucket(bucket_name)
-blob = bucket.get_blob('races2data.pickle')
-races2data = pickle.load(blob.open('rb'))
-
+races2data = storage.load_races2data()
 
 # # Read data
 # cache = './races2data.pickle'
@@ -66,9 +58,8 @@ for driver in conf.drivers:
     for race in conf.races:
         driver2stat[driver][race] = races2data[race][driver]
 
-
 scoring.compute_scores2(races2data)
-scoring.compute_scores(driver2stat)
+###scoring.compute_scores(driver2stat)#TODO(scheuclu) redoc this function
 
 # with blob.open('wb') as f:
 #     pickle.dump(races2data, f)
@@ -123,7 +114,7 @@ content = dcc.Loading(html.Div(
     style=CONTENT_STYLE))
 
 # App layout
-app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY], suppress_callback_exceptions=False)
+app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY], suppress_callback_exceptions=True)
 app.layout = html.Div([
     html.Div([dcc.Location(id="url"), sidebar, content,
               html.Footer(
@@ -164,11 +155,11 @@ def update_graph_on_driver_selection(*args):
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname == "/":
-        return pages.get_home(driver2stat)
+        return pages.get_home(races2data)
     elif pathname == "/page-1":
         return pages.get_per_race_points(driver2stat)
     elif pathname == "/page-2":
-        return pages.get_overview(driver2stat)
+        return pages.get_overview(races2data)
     elif pathname == "/page-scoring":
         return pages.get_scoring()
     elif pathname == "/page-data":
@@ -184,20 +175,74 @@ def render_page_content(pathname):
     )
 
 
-@app.callback(Output("table_data", "data"), [Input("data_race_selector", "value")], State("data_race_selector", "value"))
-def update_race_data(race_name, state):
-    print(f"Selected {race_name}")
-    print(f'state:{state}')
-    if race_name==None:
-        return state
-    df = races2data[race_name].copy()
-    df = df.reset_index()
-    return df.to_dict('records')
+# @app.callback(Output("table_data", "data"), [Input("data_race_selector", "value")], State("data_race_selector", "value"))
+# def update_race_data(race_name, state):
+#     print(f"Selected {race_name}")
+#     print(f'state:{state}')
+#     if race_name==None:
+#         return state
+#     df = races2data[race_name].copy()
+#     df = df.reset_index()
+#     return df.to_dict('records')
+
+
+@app.callback(
+    [Output('table_data', 'data'), Output('dialog_success', 'displayed'), Output('dialog_failure', 'displayed')],
+    Input('recompute_button', 'n_clicks'),
+    Input("data_race_selector", "value"),
+    # State('data_race_selector', 'value'),
+    State('pw_input', 'value'),
+    State('table_data', 'data')
+)
+def display_output(nclicks, racename, access_code, data):
+    print(nclicks, racename)
+
+    # First, we need to figure out which input was triggered
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return data, False, False
+
+    inp_name = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    # The race selector changed
+    if inp_name == 'data_race_selector':
+        print(f"Selected {racename}")
+        if racename == None:
+            return data
+        df = races2data[racename].copy()
+        df = df.reset_index()
+        return df.to_dict('records'), False, False
+    else:
+        print(access_code)
+        print(hash(access_code))
+        if access_code is not None and hashlib.md5(
+                access_code.encode()).hexdigest() == 'a12dee9a4f0cd316e4fedd0788889acd':
+
+            df = races2data[racename]
+            # Only allow updating race_result for now
+            for row in data:
+                # print(row['index'])
+                if row['index'] == 'race result':
+                    print(row)
+                    for driver in conf.drivers:
+                        # df[driver]['race result'] = int(row[driver]) if row[driver].isdigit() else row[driver]
+                        df[driver]['race result'] = row[driver]
+                    df.replace(to_replace=[None], value=float('NaN'), inplace=True)
+            # Now redo the computation. This should later only be done for the relevant race
+            ###print(df.loc['race result'])
+            scoring.score_race(df)  # TODO(scheuclu) This need to be done on df level.
+            storage.save_races2data(races2data)
+            ndf = df.copy()
+            ndf = ndf.reset_index()
+            return ndf.to_dict('records'), True, False
+        else:
+            df = races2data[racename]
+            ndf = df.copy()
+            ndf = ndf.reset_index()
+            return ndf.to_dict('records'), False, True
 
 
 if __name__ == "__main__":
-    import os
-
     app.run_server(host="0.0.0.0", debug=False, port=8080)
     # if 'DASH_DEBUG' in os.environ:
     #     app.run_server(host="0.0.0.0", debug=True, port=8050)
